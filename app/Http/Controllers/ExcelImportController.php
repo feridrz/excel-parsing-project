@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\ProcessExcelFile;
+use App\Models\Row;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
 
@@ -45,6 +46,21 @@ class ExcelImportController extends Controller
     {
         $processed = Redis::get('import_progress') ?: 0;
         return response()->json(['processed' => (int)$processed]);
+    }
+
+    public function showData(Request $request)
+    {
+        $rows = Row::orderBy('date')->paginate(100);
+
+        $grouped = $rows->getCollection()
+            ->groupBy(fn($r) => $r->date->format('d.m.Y'))
+            ->map(fn($group) => $group->values());
+
+        return response()->json([
+            'current_page' => $rows->currentPage(),
+            'last_page'    => $rows->lastPage(),
+            'data'         => $grouped,
+        ]);
     }
 
 

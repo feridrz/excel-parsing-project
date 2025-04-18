@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Events\RowImported;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -62,6 +63,7 @@ class ProcessExcelChunk implements ShouldQueue
                 'date'     => $d->format('Y-m-d'),
             ]);
 
+            broadcast(new RowImported($rowModel));
             Redis::incr('import_progress');
 
         }
